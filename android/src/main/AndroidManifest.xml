@@ -1,0 +1,83 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" package="com.example.qring_sdk_flutter">
+
+  <!-- Bluetooth permissions -->
+  <uses-permission android:name="android.permission.BLUETOOTH"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+
+  <!-- Android 12+ Bluetooth permissions -->
+  <uses-permission android:name="android.permission.BLUETOOTH_SCAN"
+      android:usesPermissionFlags="neverForLocation"
+      android:minSdkVersion="31"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_CONNECT"
+      android:minSdkVersion="31"/>
+  <uses-permission android:name="android.permission.BLUETOOTH_ADVERTISE"
+      android:minSdkVersion="31"/>
+
+  <!-- Location permissions required for BLE scan on Android < 12 -->
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
+
+  <!-- Storage permissions for firmware updates -->
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+
+  <!-- Background service -->
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE"/>
+  
+  <!-- Notification permission for Android 13+ -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS"
+      android:minSdkVersion="33"/>
+  
+  <!-- Wake lock permission for battery optimization -->
+  <uses-permission android:name="android.permission.WAKE_LOCK"/>
+  
+  <!-- Boot receiver permission for service restart after reboot -->
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
+
+  <!-- Declare Bluetooth feature -->
+  <uses-feature android:name="android.hardware.bluetooth_le" android:required="true"/>
+
+  <application>
+    <!-- QRing Background Service -->
+    <service
+        android:name=".QRingBackgroundService"
+        android:enabled="true"
+        android:exported="false"
+        android:foregroundServiceType="connectedDevice">
+    </service>
+
+    <!-- Notification Action Receiver -->
+    <receiver
+        android:name=".NotificationActionReceiver"
+        android:enabled="true"
+        android:exported="false">
+      <intent-filter>
+        <action android:name="com.example.qring_sdk_flutter.FIND_MY_RING"/>
+        <action android:name="com.example.qring_sdk_flutter.STOP_SERVICE"/>
+      </intent-filter>
+    </receiver>
+
+    <!-- Boot Receiver - Restarts service after device boot -->
+    <receiver
+        android:name=".BootReceiver"
+        android:enabled="true"
+        android:exported="false"
+        android:directBootAware="false">
+      <intent-filter>
+        <action android:name="android.intent.action.BOOT_COMPLETED"/>
+      </intent-filter>
+    </receiver>
+
+    <!-- Bluetooth Receiver - Restarts service when Bluetooth is turned on -->
+    <receiver
+        android:name=".BluetoothReceiver"
+        android:enabled="true"
+        android:exported="false">
+      <intent-filter>
+        <action android:name="android.bluetooth.adapter.action.STATE_CHANGED"/>
+      </intent-filter>
+    </receiver>
+  </application>
+
+</manifest>

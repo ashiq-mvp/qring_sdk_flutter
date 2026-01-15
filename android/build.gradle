@@ -1,0 +1,99 @@
+group = "com.example.qring_sdk_flutter"
+version = "1.0-SNAPSHOT"
+
+buildscript {
+    ext.kotlin_version = "2.2.20"
+    repositories {
+        google()
+        mavenCentral()
+    }
+
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.11.1")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version")
+    }
+}
+
+rootProject.allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        flatDir {
+            dirs 'libs'
+        }
+        // Add Flutter SDK repository for testing
+        def localProperties = new Properties()
+        def localPropertiesFile = rootProject.file('local.properties')
+        if (localPropertiesFile.exists()) {
+            localPropertiesFile.withReader('UTF-8') { reader ->
+                localProperties.load(reader)
+            }
+        }
+        def flutterSdkPath = localProperties.getProperty('flutter.sdk')
+        if (flutterSdkPath != null) {
+            maven {
+                url "$flutterSdkPath/bin/cache/artifacts/engine/android-x64"
+            }
+        }
+    }
+}
+
+apply plugin: "com.android.library"
+apply plugin: "kotlin-android"
+
+android {
+    namespace = "com.example.qring_sdk_flutter"
+
+    compileSdk = 36
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
+    }
+
+    kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main.java.srcDirs += "src/main/kotlin"
+        test.java.srcDirs += "src/test/kotlin"
+    }
+
+    defaultConfig {
+        minSdk = 24
+    }
+
+    dependencies {
+        implementation(name: 'qring_sdk_1.0.0.4', ext: 'aar')
+        
+        // Required dependencies for the QRing SDK
+        implementation 'androidx.appcompat:appcompat:1.6.1'
+        implementation 'com.google.android.material:material:1.11.0'
+        
+        // Flutter dependencies (compileOnly for plugin development)
+        compileOnly files("${System.getenv('FLUTTER_ROOT')}/bin/cache/artifacts/engine/android-arm-release/flutter.jar")
+        
+        testImplementation("org.jetbrains.kotlin:kotlin-test")
+        testImplementation("org.mockito:mockito-core:5.0.0")
+        testImplementation("org.mockito:mockito-inline:5.0.0")
+        testImplementation("junit:junit:4.13.2")
+        testImplementation("net.jqwik:jqwik:1.8.2")
+        testImplementation("androidx.test:core:1.5.0")
+    }
+    
+    testOptions {
+        unitTests {
+            returnDefaultValues = true
+            all {
+                useJUnitPlatform()
+
+                testLogging {
+                   events "passed", "skipped", "failed", "standardOut", "standardError"
+                   outputs.upToDateWhen {false}
+                   showStandardStreams = true
+                }
+            }
+        }
+    }
+}
